@@ -502,7 +502,7 @@ class KDTreeBundles(object):
                      leaf_size=10):
         thresholds = [40, 30, 20, 10, mdf_thr]
         cluster_map = qbx_with_merge(self.model_bundle, thresholds, nb_pts=nb_pts,
-                                     select_randomly=500000, verbose=self.verbose)
+                                     select_randomly=500000)
 
         print('Number of centroids %d' % (len(cluster_map.centroids),))
 
