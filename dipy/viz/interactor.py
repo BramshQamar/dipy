@@ -12,7 +12,7 @@ if have_vtk:
     vtkInteractorStyleUser = vtk.vtkInteractorStyleUser
 else:
     vtkInteractorStyleUser = object
-from ipdb import set_trace
+#from ipdb import set_trace
 
 
 class InteractorStyleImageAndTrackballActor(vtkInteractorStyleUser):
