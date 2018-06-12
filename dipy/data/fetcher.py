@@ -32,6 +32,7 @@ else:
 UW_RW_URL = \
   "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
 
+
 class FetcherError(Exception):
     pass
 
@@ -430,6 +431,18 @@ fetch_cfin_multib = _make_fetcher(
          " More details about the data are available in their paper: " +
          " https://www.nature.com/articles/sdata201672"))
 
+fetch_bundle_atlas_hcp842 = _make_fetcher(
+    "fetch_bundle_atlas_hcp842",
+    pjoin(dipy_home, 'bundle_atlas_hcp842'),
+    'https://ndownloader.figshare.com/files/',
+    ['11921522'],
+    ["Atlas_in_MNI_Space_16_bundles.zip"],
+    data_size="200MB",
+    doc="Download atlas tractogram from the hcp842 dataset with its bundles",
+    unzip=True)
+
+
+# https://ndownloader.figshare.com/files/11921522
 
 def read_scil_b0():
     """ Load GE 3T b0 image form the scil b0 dataset.
@@ -446,6 +459,20 @@ def read_scil_b0():
                  'b0.nii.gz')
 
     return nib.load(file)
+
+
+def read_bundle_atlas_hcp842():
+    """
+    Returns
+    -------
+    file1 : string
+    file2 : string
+    """
+    file1 = pjoin(dipy_home, 'bundle_atlas_hcp842/whole_brain/whole_brain.trk')
+
+    file2 = pjoin(dipy_home, 'bundle_atlas_hcp842/bundles/*.trk')
+
+    return file1, file2
 
 
 def read_siemens_scil_b0():
