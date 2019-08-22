@@ -76,11 +76,15 @@ HELP_MESSAGE = """
 >> s: save in file
 """
 
+try_label = """
+testing labels
+"""
+
 
 class Horizon(object):
 
-    def __init__(self, tractograms=None, images=None, pams=None,
-                 cluster=False, cluster_thr=15.0,
+    def __init__(self, tractograms=None, images=None, pams=None, 
+                 tractogram_labels=None, cluster=False, cluster_thr=15.0,
                  random_colors=False, length_gt=0, length_lt=1000,
                  clusters_gt=0, clusters_lt=10000,
                  world_coords=True, interactive=True,
@@ -94,6 +98,8 @@ class Horizon(object):
         images : sequence of tuples
             Each tuple contains data and affine
         pams : sequence of PeakAndMetrics
+        tractogram_labels : string
+            names of files
         cluster : bool
             Enable QuickBundlesX clustering
         cluster_thr : float
@@ -139,6 +145,7 @@ class Horizon(object):
         self.tractogram_clusters = {}
         self.recorded_events = recorded_events
         self.show_m = None
+        self.tractogram_labels = tractogram_labels
         # self.mem = GlobalHorizon()
         self.return_showm = return_showm
 
@@ -165,7 +172,47 @@ class Horizon(object):
         """ Add streamline actors to the scene
         """
         color_gen = distinguishable_colormap()
+        count = 0
         for (t, streamlines) in enumerate(tractograms):
+            
+            # edit here bramsh
+            
+            self.pcoord = np.mean(streamlines.data, axis=0)
+            #print(streamlines.data)
+            print(self.pcoord)
+            
+            ii = int(len(streamlines)/2)
+            jj = int(len(streamlines[ii])/2)
+            cc1 = streamlines[ii][jj]
+            
+            
+            label_actor = actor.label(self.tractogram_labels[count], 
+                                      self.pcoord, scale=(2.9,2.9, 2.9), 
+                                      color=(1, 1, 1))
+            
+            label_actor.SetCamera(scene.GetActiveCamera())
+            
+            #cc1 = self.pcoord.copy()
+            #cc1[1] = cc1[1] - 5 
+            line_label = actor.line(Streamlines([[cc1,self.pcoord]]), 
+                                    colors=(1,1,1))
+            
+            scene.add(label_actor)
+            scene.add(line_label)
+            count += 1
+            
+            '''
+            text_3d_actor = actor.text_3d(self.labels, position=self.pcoord,
+                                          font_size = 7, shadow=True, bold=True,
+                                          vertical_justification="top",
+                                          color=(0,1,1))
+            
+            
+            #text_3d_actor.SetCamera(scene.GetActiveCamera())
+            scene.add(text_3d_actor) '''
+            #edit ends
+            
+            
             if self.random_colors:
                 colors = next(color_gen)
             else:
@@ -278,7 +325,27 @@ class Horizon(object):
                                          order_transparent=True,
                                          reset_camera=False)
         self.show_m.initialize()
+        
+        
+               # edit by bramsh
+        '''
+        text_block_l = build_label(try_label, 35)
+        text_block_l.message = try_label
+        
+        
+        self.help_panel2 = ui.Panel2D(size=(320, 200),
+                                     color=(0.8, 0.8, 1),
+                                     opacity=0.0,
+                                     align="left")
 
+        print("print coordinates = ",self.pcoord )
+        cd1 = abs(self.pcoord[1]/100)
+        cd2 = abs(self.pcoord[2]/100)
+        self.help_panel2.add_element(text_block_l, coords=(cd1,cd2))
+        scene.add(self.help_panel2)
+        
+        # edit ends
+        '''
         if self.cluster and self.tractograms:
 
             lengths = np.array(
@@ -287,12 +354,14 @@ class Horizon(object):
             sizes = np.array(szs)
 
             # global self.panel2, slider_length, slider_size
+            
             self.panel2 = ui.Panel2D(size=(400, 200),
                                      position=(850, 670),
                                      color=(1, 1, 1),
                                      opacity=0.1,
                                      align="right")
-
+            
+            
             slider_label_threshold = build_label(text="Threshold")
             slider_threshold = ui.LineSlider2D(
                     min_value=5,
@@ -406,6 +475,8 @@ class Horizon(object):
 
             self.help_panel.add_element(text_block, coords=(0.05, 0.1))
             scene.add(self.help_panel)
+            
+            
 
         if len(self.images) > 0:
             # !!Only first image loading supported for now')
@@ -436,6 +507,8 @@ class Horizon(object):
                 if self.cluster:
                     self.panel2.re_align(size_change)
                     self.help_panel.re_align(size_change)
+                    # edit bramsh
+                    #self.help_panel2.re_align(size_change)
 
         self.show_m.initialize()
 
@@ -506,6 +579,7 @@ class Horizon(object):
                 # retract help panel
                 if key == 'o' or key == 'O':
                     self.help_panel._set_position((-300, 0))
+                    #self.help_panel2._set_position((-300, 0))
                     self.show_m.render()
 
                 # save current result
@@ -645,7 +719,7 @@ class Horizon(object):
                           reset_camera=False)
 
 
-def horizon(tractograms=None, images=None, pams=None,
+def horizon(tractograms=None, images=None, pams=None, tractogram_labels=None,
             cluster=False, cluster_thr=15.0,
             random_colors=False, length_gt=0, length_lt=1000,
             clusters_gt=0, clusters_lt=10000,
@@ -660,6 +734,8 @@ def horizon(tractograms=None, images=None, pams=None,
     images : sequence of tuples
         Each tuple contains data and affine
     pams : peaks
+    tractogram_labels : string
+        names of files
     cluster : bool
         Enable QuickBundlesX clustering
     cluster_thr : float
@@ -673,7 +749,7 @@ def horizon(tractograms=None, images=None, pams=None,
     interactive : bool
     out_png : string
     recorded_events : string
-        File path to replay recorded events
+    File path to replay recorded events
 
     References
     ----------
@@ -683,8 +759,8 @@ def horizon(tractograms=None, images=None, pams=None,
         adaptive visualization, Proceedings of: International Society of
         Magnetic Resonance in Medicine (ISMRM), Montreal, Canada, 2019.
     """
-    hz = Horizon(tractograms, images, pams, cluster, cluster_thr,
-                 random_colors, length_gt, length_lt,
+    hz = Horizon(tractograms, images, pams, tractogram_labels,
+                 cluster, cluster_thr, random_colors, length_gt, length_lt,
                  clusters_gt, clusters_lt,
                  world_coords, interactive,
                  out_png, recorded_events, return_showm)
@@ -694,3 +770,11 @@ def horizon(tractograms=None, images=None, pams=None,
     if return_showm:
         return hz.build_show(scene)
     hz.build_show(scene)
+
+
+
+'''
+self.show_m.scene #gives renderer
+#textactor set camera (get camera)
+
+'''

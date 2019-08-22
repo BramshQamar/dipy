@@ -49,6 +49,7 @@ class HorizonFlow(Workflow):
         """
         verbose = True
         tractograms = []
+        tractogram_labels = []
         images = []
         pams = []
         interactive = not stealth
@@ -72,6 +73,7 @@ class HorizonFlow(Workflow):
 
                 streamlines = nib.streamlines.load(fname).streamlines
                 tractograms.append(streamlines)
+                tractogram_labels.append(fname)
             elif ends('dpy'):
 
                 dpy_obj = Dpy(fname, mode='r')
@@ -98,10 +100,11 @@ class HorizonFlow(Workflow):
                     print(pam.peak_dirs.shape)
 
         horizon(tractograms=tractograms, images=images, pams=pams,
-                cluster=cluster, cluster_thr=cluster_thr,
-                random_colors=random_colors,
+                tractogram_labels=tractogram_labels, cluster=cluster,
+                cluster_thr=cluster_thr, random_colors=random_colors,
                 length_gt=length_gt, length_lt=length_lt,
                 clusters_gt=clusters_gt, clusters_lt=clusters_lt,
                 world_coords=world_coords,
                 interactive=interactive,
                 out_png=pjoin(out_dir, out_stealth_png))
+
