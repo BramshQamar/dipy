@@ -76,11 +76,6 @@ HELP_MESSAGE = """
 >> s: save in file
 """
 
-try_label = """
-testing labels
-"""
-
-
 class Horizon(object):
 
     def __init__(self, tractograms=None, images=None, pams=None, 
@@ -176,41 +171,28 @@ class Horizon(object):
         for (t, streamlines) in enumerate(tractograms):
             
             # edit here bramsh
-            
-            self.pcoord = np.mean(streamlines.data, axis=0)
-            #print(streamlines.data)
-            print(self.pcoord)
-            
-            ii = int(len(streamlines)/2)
-            jj = int(len(streamlines[ii])/2)
-            cc1 = streamlines[ii][jj]
-            
-            
-            label_actor = actor.label(self.tractogram_labels[count], 
-                                      self.pcoord, scale=(2.9,2.9, 2.9), 
-                                      color=(1, 1, 1))
-            
-            label_actor.SetCamera(scene.GetActiveCamera())
-            
-            #cc1 = self.pcoord.copy()
-            #cc1[1] = cc1[1] - 5 
-            line_label = actor.line(Streamlines([[cc1,self.pcoord]]), 
-                                    colors=(1,1,1))
-            
-            scene.add(label_actor)
-            scene.add(line_label)
-            count += 1
-            
-            '''
-            text_3d_actor = actor.text_3d(self.labels, position=self.pcoord,
-                                          font_size = 7, shadow=True, bold=True,
-                                          vertical_justification="top",
-                                          color=(0,1,1))
-            
-            
-            #text_3d_actor.SetCamera(scene.GetActiveCamera())
-            scene.add(text_3d_actor) '''
-            #edit ends
+            if self.tractogram_labels:
+                self.pcoord = np.mean(streamlines.data, axis=0)
+                
+                ii = int(len(streamlines)/2)
+                jj = int(len(streamlines[ii])/2)
+                cc1 = streamlines[ii][jj]
+                
+                
+                label_actor = actor.label(self.tractogram_labels[count], 
+                                          self.pcoord, scale=(2.9,2.9, 2.9), 
+                                          color=(1, 1, 1))
+                
+                label_actor.SetCamera(scene.GetActiveCamera())
+
+                line_label = actor.line(Streamlines([[cc1,self.pcoord]]), 
+                                        colors=(1,1,1), linewidth=3)
+                
+                scene.add(label_actor)
+                scene.add(line_label)
+                count += 1
+
+                #edit ends
             
             
             if self.random_colors:
@@ -325,27 +307,7 @@ class Horizon(object):
                                          order_transparent=True,
                                          reset_camera=False)
         self.show_m.initialize()
-        
-        
-               # edit by bramsh
-        '''
-        text_block_l = build_label(try_label, 35)
-        text_block_l.message = try_label
-        
-        
-        self.help_panel2 = ui.Panel2D(size=(320, 200),
-                                     color=(0.8, 0.8, 1),
-                                     opacity=0.0,
-                                     align="left")
 
-        print("print coordinates = ",self.pcoord )
-        cd1 = abs(self.pcoord[1]/100)
-        cd2 = abs(self.pcoord[2]/100)
-        self.help_panel2.add_element(text_block_l, coords=(cd1,cd2))
-        scene.add(self.help_panel2)
-        
-        # edit ends
-        '''
         if self.cluster and self.tractograms:
 
             lengths = np.array(
@@ -507,8 +469,6 @@ class Horizon(object):
                 if self.cluster:
                     self.panel2.re_align(size_change)
                     self.help_panel.re_align(size_change)
-                    # edit bramsh
-                    #self.help_panel2.re_align(size_change)
 
         self.show_m.initialize()
 
@@ -579,7 +539,6 @@ class Horizon(object):
                 # retract help panel
                 if key == 'o' or key == 'O':
                     self.help_panel._set_position((-300, 0))
-                    #self.help_panel2._set_position((-300, 0))
                     self.show_m.render()
 
                 # save current result

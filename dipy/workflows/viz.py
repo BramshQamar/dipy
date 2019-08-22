@@ -17,7 +17,8 @@ class HorizonFlow(Workflow):
     def run(self, input_files, cluster=False, cluster_thr=15.,
             random_colors=False, length_gt=0, length_lt=1000,
             clusters_gt=0, clusters_lt=10**8, native_coords=False,
-            stealth=False, out_dir='', out_stealth_png='tmp.png'):
+            stealth=False, show_labels=False, out_dir='',
+            out_stealth_png='tmp.png'):
         """ Highly interactive visualization - invert the Horizon!
 
         Interact with any number of .trk, .tck or .dpy tractograms and anatomy
@@ -35,6 +36,7 @@ class HorizonFlow(Workflow):
         clusters_lt : int
         native_coords : bool
         stealth : bool
+        show_labels : bool
         out_dir : string
         out_stealth_png : string
 
@@ -73,7 +75,9 @@ class HorizonFlow(Workflow):
 
                 streamlines = nib.streamlines.load(fname).streamlines
                 tractograms.append(streamlines)
-                tractogram_labels.append(fname)
+                if show_labels is True:
+                    tractogram_labels.append(fname)
+
             elif ends('dpy'):
 
                 dpy_obj = Dpy(fname, mode='r')
@@ -98,6 +102,9 @@ class HorizonFlow(Workflow):
                 if verbose:
                     print('Peak_dirs shape')
                     print(pam.peak_dirs.shape)
+
+        if show_labels is False:
+            tractogram_labels = None
 
         horizon(tractograms=tractograms, images=images, pams=pams,
                 tractogram_labels=tractogram_labels, cluster=cluster,
