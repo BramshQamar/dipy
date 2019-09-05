@@ -14,7 +14,7 @@ class HorizonFlow(Workflow):
     def get_short_name(cls):
         return 'horizon'
 
-    def run(self, input_files, cluster=False, cluster_thr=15.,
+    def run(self, input_files, grid=False, cluster=False, cluster_thr=15.,
             random_colors=False, length_gt=0, length_lt=1000,
             clusters_gt=0, clusters_lt=10**8, native_coords=False,
             stealth=False, show_labels=False, out_dir='',
@@ -27,6 +27,7 @@ class HorizonFlow(Workflow):
         Parameters
         ----------
         input_files : variable string
+        grid : bool
         cluster : bool
         cluster_thr : float
         random_colors : bool
@@ -58,6 +59,9 @@ class HorizonFlow(Workflow):
         world_coords = not native_coords
 
         io_it = self.get_io_iterator()
+
+        if grid is True:
+            show_labels = True
 
         for input_output in io_it:
 
@@ -107,7 +111,7 @@ class HorizonFlow(Workflow):
             tractogram_labels = None
 
         horizon(tractograms=tractograms, images=images, pams=pams,
-                tractogram_labels=tractogram_labels, cluster=cluster,
+                tractogram_labels=tractogram_labels, grid=grid, cluster=cluster,
                 cluster_thr=cluster_thr, random_colors=random_colors,
                 length_gt=length_gt, length_lt=length_lt,
                 clusters_gt=clusters_gt, clusters_lt=clusters_lt,
