@@ -76,12 +76,13 @@ HELP_MESSAGE = """
 >> s: save in file
 """
 
+
 class Horizon(object):
 
-    def __init__(self, tractograms=None, images=None, pams=None, 
-                 tractogram_labels=None, grid=False, cluster=False, cluster_thr=15.0,
-                 random_colors=False, length_gt=0, length_lt=1000,
-                 clusters_gt=0, clusters_lt=10000,
+    def __init__(self, tractograms=None, images=None, pams=None,
+                 tractogram_labels=None, grid=False, cluster=False,
+                 cluster_thr=15.0, random_colors=False, length_gt=0,
+                 length_lt=1000, clusters_gt=0, clusters_lt=10000,
                  world_coords=True, interactive=True,
                  out_png='tmp.png', recorded_events=None, return_showm=False):
         """ Highly interactive visualization - invert the Horizon!
@@ -171,73 +172,63 @@ class Horizon(object):
         """
         color_gen = distinguishable_colormap()
         count = 0
-        
-                # edit here bramsh for grid
+
+        # edit here bramsh for grid
         if self.grid:
             all_actors = []
             for (t, streamlines) in enumerate(tractograms):
 
-                
                 all_actors.append(actor.line(streamlines))
-                
-                
+
                 self.gui = ui.GridUI(all_actors, self.tractogram_labels,
-                                rotation_axis=None)
+                                     rotation_axis=None)
                 scene.background((0.5, 0.5, 0.5))
                 scene.background((0, 0, 0))
-                '''
-                show_m = window.ShowManager(scene, size=(1200, 900))
-                show_m.initialize()
-                show_m.scene.add(gui)
-                show_m.start()
-    '''
-                
-                #edit ends
-        
+
+                # edit ends
+
         else:
-        
+
             for (t, streamlines) in enumerate(tractograms):
-                
+
                 # edit here bramsh for labels
                 if self.tractogram_labels:
                     self.pcoord = np.mean(streamlines.data, axis=0)
-                    
+
                     ii = int(len(streamlines)/2)
                     jj = int(len(streamlines[ii])/2)
                     cc1 = streamlines[ii][jj]
-                    
-                    
-                    label_actor = actor.label(self.tractogram_labels[count], 
-                                              self.pcoord, scale=(2.9,2.9, 2.9), 
+
+                    label_actor = actor.label(self.tractogram_labels[count],
+                                              self.pcoord,
+                                              scale=(2.9,2.9, 2.9),
                                               color=(1, 1, 1))
-                    
+        
                     label_actor.SetCamera(scene.GetActiveCamera())
-    
-                    line_label = actor.line(Streamlines([[cc1,self.pcoord]]), 
+
+                    line_label = actor.line(Streamlines([[cc1,self.pcoord]]),
                                             colors=(1,1,1), linewidth=3)
-                    
+
                     scene.add(label_actor)
                     scene.add(line_label)
                     count += 1
-    
-                    #edit ends
-                    
-                    
-                
+
+                    # edit ends
+
                 if self.random_colors:
                     colors = next(color_gen)
                 else:
                     colors = None
-    
+
                 if not self.world_coords:
                     # TODO we need to read the affine of a tractogram
                     # from a StatefullTractogram
                     msg = 'Currently native coordinates are not supported'
                     msg += ' for streamlines'
                     raise ValueError(msg)
-    
+
                 if self.cluster:
-    
+
                     print(' Clustering threshold {} \n'.format(threshold))
                     clusters = qbx_and_merge(streamlines,
                                              [40, 30, 25, 20, threshold])
@@ -246,43 +237,44 @@ class Horizon(object):
                     print(' Number of centroids is {}'.format(len(centroids)))
                     sizes = np.array([len(c) for c in clusters])
                     linewidths = np.interp(sizes,
-                                           [sizes.min(), sizes.max()], [0.1, 2.])
+                                           [sizes.min(), sizes.max()],
+                                           [0.1, 2.])
                     centroid_lengths = np.array([length(c) for c in centroids])
-    
+
                     print(' Minimum number of streamlines in cluster {}'
                           .format(sizes.min()))
-    
+
                     print(' Maximum number of streamlines in cluster {}'
                           .format(sizes.max()))
-    
+
                     print(' Construct cluster actors')
                     for (i, c) in enumerate(centroids):
-    
+
                         centroid_actor = actor.streamtube([c], colors,
                                                           linewidth=linewidths[i],
                                                           lod=False)
                         scene.add(centroid_actor)
                         self.mem.centroid_actors.append(centroid_actor)
-    
+
                         cluster_actor = actor.line(clusters[i],
                                                    lod=False)
                         cluster_actor.GetProperty().SetRenderLinesAsTubes(1)
                         cluster_actor.GetProperty().SetLineWidth(6)
                         cluster_actor.GetProperty().SetOpacity(1)
                         cluster_actor.VisibilityOff()
-    
+
                         scene.add(cluster_actor)
                         self.mem.cluster_actors.append(cluster_actor)
-    
-                        # Every centroid actor (cea) is paired to a cluster actor
-                        # (cla).
-    
+
+                        # Every centroid actor (cea) is paired to a
+                        # cluster actor (cla).
+
                         self.cea[centroid_actor] = {
                             'cluster_actor': cluster_actor,
                             'cluster': i, 'tractogram': t,
                             'size': sizes[i], 'length': centroid_lengths[i],
                             'selected': 0, 'expanded': 0}
-    
+
                         self.cla[cluster_actor] = {
                             'centroid_actor': centroid_actor,
                             'cluster': i, 'tractogram': t,
@@ -290,9 +282,9 @@ class Horizon(object):
                             'selected': 0}
                         apply_shader(self, cluster_actor)
                         apply_shader(self, centroid_actor)
-    
+
                 else:
-    
+
                     streamline_actor = actor.line(streamlines, colors=colors)
                     streamline_actor.GetProperty().SetEdgeVisibility(1)
                     streamline_actor.GetProperty().SetRenderLinesAsTubes(1)
@@ -331,41 +323,40 @@ class Horizon(object):
     def build_show(self, scene):
 
         title = 'Horizon ' + horizon_version
-        
+
         if self.grid:
-            
+
             self.show_m = window.ShowManager(scene, title=title,
                                              size=(1200, 900),
                                              order_transparent=True,
                                              reset_camera=False)
-            
+
             self.show_m.initialize()
             self.show_m.scene.add(self.gui)
             self.show_m.start()
         else:
-        
+
             self.show_m = window.ShowManager(scene, title=title,
                                              size=(1200, 900),
                                              order_transparent=True,
                                              reset_camera=False)
             self.show_m.initialize()
-    
+
             if self.cluster and self.tractograms:
-    
+
                 lengths = np.array(
                     [self.cla[c]['length'] for c in self.cla])
                 szs = [self.cla[c]['size'] for c in self.cla]
                 sizes = np.array(szs)
-    
+
                 # global self.panel2, slider_length, slider_size
-                
+
                 self.panel2 = ui.Panel2D(size=(400, 200),
                                          position=(850, 670),
                                          color=(1, 1, 1),
                                          opacity=0.1,
                                          align="right")
-                
-                
+
                 slider_label_threshold = build_label(text="Threshold")
                 slider_threshold = ui.LineSlider2D(
                         min_value=5,
@@ -374,7 +365,7 @@ class Horizon(object):
                         text_template="{value:.0f}",
                         length=140, shape='square')
                 _color_slider(slider_threshold)
-    
+
                 slider_label_length = build_label(text="Length")
                 slider_length = ui.LineSlider2D(
                         min_value=lengths.min(),
@@ -383,7 +374,7 @@ class Horizon(object):
                         text_template="{value:.0f}",
                         length=140)
                 _color_slider(slider_length)
-    
+
                 slider_label_size = build_label(text="Size")
                 slider_size = ui.LineSlider2D(
                         min_value=sizes.min(),
@@ -392,43 +383,43 @@ class Horizon(object):
                         text_template="{value:.0f}",
                         length=140)
                 _color_slider(slider_size)
-    
+
                 # global self.length_min, size_min
                 self.size_min = sizes.min()
                 self.length_min = lengths.min()
-    
+
                 def change_threshold(istyle, obj, slider):
                     sv = np.round(slider.value, 0)
                     self.remove_actors(scene)
                     self.add_actors(scene, self.tractograms, threshold=sv)
-    
+
                     # TODO need to double check if this section is still needed
                     lengths = np.array(
                         [self.cla[c]['length'] for c in self.cla])
                     szs = [self.cla[c]['size'] for c in self.cla]
                     sizes = np.array(szs)
-    
+
                     slider_length.min_value = lengths.min()
                     slider_length.max_value = lengths.max()
                     slider_length.value = lengths.min()
                     slider_length.update()
-    
+
                     slider_size.min_value = sizes.min()
                     slider_size.max_value = sizes.max()
                     slider_size.value = sizes.min()
                     slider_size.update()
-    
+
                     self.length_min = min(lengths)
                     self.size_min = min(sizes)
-    
+
                     self.show_m.render()
-    
+
                 slider_threshold.handle_events(slider_threshold.handle.actor)
                 slider_threshold.on_left_mouse_button_released = change_threshold
-    
+
                 def hide_clusters_length(slider):
                     self.length_min = np.round(slider.value)
-    
+
                     for k in self.cla:
                         if (self.cla[k]['length'] < self.length_min or
                                 self.cla[k]['size'] < self.size_min):
@@ -438,10 +429,10 @@ class Horizon(object):
                         else:
                             self.cla[k]['centroid_actor'].SetVisibility(1)
                     self.show_m.render()
-    
+
                 def hide_clusters_size(slider):
                     self.size_min = np.round(slider.value)
-    
+
                     for k in self.cla:
                         if (self.cla[k]['length'] < self.length_min or
                                 self.cla[k]['size'] < self.size_min):
@@ -451,42 +442,40 @@ class Horizon(object):
                         else:
                             self.cla[k]['centroid_actor'].SetVisibility(1)
                     self.show_m.render()
-    
+ 
                 slider_length.on_change = hide_clusters_length
-    
+
                 # Clustering panel
                 self.panel2.add_element(slider_label_threshold, coords=(0.1, 0.26))
                 self.panel2.add_element(slider_threshold, coords=(0.4, 0.26))
-    
+
                 self.panel2.add_element(slider_label_length, coords=(0.1, 0.52))
                 self.panel2.add_element(slider_length, coords=(0.4, 0.52))
-    
+
                 slider_size.on_change = hide_clusters_size
-    
+
                 self.panel2.add_element(slider_label_size, coords=(0.1, 0.78))
                 self.panel2.add_element(slider_size, coords=(0.4, 0.78))
-    
+
                 scene.add(self.panel2)
-    
+
                 # Information panel
                 text_block = build_label(HELP_MESSAGE, 18)
                 text_block.message = HELP_MESSAGE
-    
+
                 self.help_panel = ui.Panel2D(size=(320, 200),
                                              color=(0.8, 0.8, 1),
                                              opacity=0.2,
                                              align="left")
-    
+  
                 self.help_panel.add_element(text_block, coords=(0.05, 0.1))
                 scene.add(self.help_panel)
-                
-                
-    
+
             if len(self.images) > 0:
                 # !!Only first image loading supported for now')
                 data, affine = self.images[0]
                 self.vox2ras = affine
-    
+
                 if len(self.pams) > 0:
                     pam = self.pams[0]
                 else:
@@ -498,9 +487,9 @@ class Horizon(object):
                 data = None
                 affine = None
                 pam = None
-    
+
             self.win_size = scene.GetSize()
-    
+
             def win_callback(obj, event):
                 if self.win_size != obj.GetSize():
                     size_old = self.win_size
@@ -511,43 +500,43 @@ class Horizon(object):
                     if self.cluster:
                         self.panel2.re_align(size_change)
                         self.help_panel.re_align(size_change)
-    
+
             self.show_m.initialize()
-    
+
             # TODO the twenty lines above are repeated in add_actor
             # when callbacks parameter is True
             # it would be much nicer if we can refactor here.
             def left_click_centroid_callback(obj, event):
-    
+
                 self.cea[obj]['selected'] = not self.cea[obj]['selected']
                 self.cla[self.cea[obj]['cluster_actor']]['selected'] = \
                     self.cea[obj]['selected']
                 self.show_m.render()
-    
+
             def left_click_cluster_callback(obj, event):
-    
+
                 if self.cla[obj]['selected']:
                     self.cla[obj]['centroid_actor'].VisibilityOn()
                     ca = self.cla[obj]['centroid_actor']
                     self.cea[ca]['selected'] = 0
                     obj.VisibilityOff()
                     self.cea[ca]['expanded'] = 0
-    
+
                 self.show_m.render()
-    
+
             for cl in self.cla:
-                cl.AddObserver('LeftButtonPressEvent', left_click_cluster_callback,
-                               1.0)
+                cl.AddObserver('LeftButtonPressEvent',
+                               left_click_cluster_callback, 1.0)
                 self.cla[cl]['centroid_actor'].AddObserver(
                     'LeftButtonPressEvent', left_click_centroid_callback, 1.0)
-    
+
             self.hide_centroids = True
             self.select_all = False
-    
+
             def key_press(obj, event):
                 key = obj.GetKeySym()
                 if self.cluster:
-    
+
                     # hide on/off unselected centroids
                     if key == 'h' or key == 'H':
                         if self.hide_centroids:
@@ -623,7 +612,7 @@ class Horizon(object):
                                       interactive=True)
                         ren2 = hz2.build_scene()
                         hz2.build_show(ren2)
-    
+
                     if key == 'a' or key == 'A':
     
                         if self.select_all is False:
@@ -660,65 +649,65 @@ class Horizon(object):
                                             VisibilityOn()
                                         c.VisibilityOff()
                                         self.cea[c]['expanded'] = 1
-    
+
                         self.show_m.render()
-    
+
                     if key == 'r' or key == 'R':
-    
+
                         for c in self.cea:
-    
+
                             if (self.cea[c]['length'] >= self.length_min and
                                     self.cea[c]['size'] >= self.size_min):
                                 self.cea[c]['cluster_actor'].VisibilityOff()
                                 c.VisibilityOn()
                                 self.cea[c]['expanded'] = 0
-    
+
                     self.show_m.render()
-    
+
             self.mem.window_timer_cnt = 0
-    
+
             def timer_callback(obj, event):
-    
+
                 self.mem.window_timer_cnt += 1
                 # TODO possibly add automatic rotation option
                 # self.show_m.scene.azimuth(0.01 * self.mem.window_timer_cnt)
                 # self.show_m.render()
-    
+
             scene.reset_camera()
             scene.zoom(1.5)
             scene.reset_clipping_range()
-    
+
             if self.interactive:
-    
+
                 if self.recorded_events is None:
-    
+
                     self.show_m.add_window_callback(win_callback)
                     self.show_m.add_timer_callback(True, 200, timer_callback)
                     self.show_m.iren.AddObserver('KeyPressEvent', key_press)
                     self.show_m.render()
                     self.show_m.start()
-    
+
                 else:
-    
+
                     self.show_m.add_window_callback(win_callback)
                     self.show_m.add_timer_callback(True, 200, timer_callback)
                     self.show_m.iren.AddObserver('KeyPressEvent', key_press)
-    
+
                     # set to True if event recording needs updating
                     recording = False
                     recording_filename = self.recorded_events
-    
+
                     if recording:
                         self.show_m.record_events_to_file(recording_filename)
                     else:
                         self.show_m.play_events_from_file(recording_filename)
-    
+
             else:
-    
+
                 window.record(scene, out_path=self.out_png,
                               size=(1200, 900),
                               reset_camera=False)
-    
+
 
 def horizon(tractograms=None, images=None, pams=None, tractogram_labels=None,
             grid=False, cluster=False, cluster_thr=15.0,
@@ -773,8 +762,6 @@ def horizon(tractograms=None, images=None, pams=None, tractogram_labels=None,
     if return_showm:
         return hz.build_show(scene)
     hz.build_show(scene)
-
-
 
 '''
 self.show_m.scene #gives renderer
