@@ -203,7 +203,7 @@ class Horizon(object):
                                               self.pcoord,
                                               scale=(2.9,2.9, 2.9),
                                               color=(1, 1, 1))
-        
+
                     label_actor.SetCamera(scene.GetActiveCamera())
 
                     line_label = actor.line(Streamlines([[cc1,self.pcoord]]),
@@ -442,7 +442,7 @@ class Horizon(object):
                         else:
                             self.cla[k]['centroid_actor'].SetVisibility(1)
                     self.show_m.render()
- 
+
                 slider_length.on_change = hide_clusters_length
 
                 # Clustering panel
@@ -467,7 +467,7 @@ class Horizon(object):
                                              color=(0.8, 0.8, 1),
                                              opacity=0.2,
                                              align="left")
-  
+
                 self.help_panel.add_element(text_block, coords=(0.05, 0.1))
                 scene.add(self.help_panel)
 
